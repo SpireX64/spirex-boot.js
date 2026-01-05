@@ -1,10 +1,10 @@
 import { vi, describe, test, expect } from "vitest";
-import { createBootTask } from "./index";
+import { createBootTask, createBootProcess } from "./index";
 
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
-        describe("Create Task", () => {
-            test("WHEN: Create task", () => {
+        describe("Create task", () => {
+            test("WHEN: Create task instance", () => {
                 // Arrange ---------
                 var taskName = "foo";
                 var taskRunnable = vi.fn();
@@ -19,6 +19,20 @@ describe("SpireX/Boot", () => {
                 expect(task.runnable).eq(taskRunnable);
 
                 expect(taskRunnable).not.toHaveBeenCalled();
+            });
+        });
+    });
+
+    describe("Boot Process", () => {
+        describe("Create process", () => {
+            test("WHEN: Create process instance", () => {
+                // Arrange --------
+
+                // Act ------------
+                var process = createBootProcess();
+
+                // Assert ---------
+                expect(process).instanceOf(Object);
             });
         });
     });

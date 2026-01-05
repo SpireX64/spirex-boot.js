@@ -9,3 +9,7 @@ export declare function createBootTask(
     name: string,
     runnable: TRunnable,
 ): TBootTask;
+
+export interface IBootProcess {}
+
+export declare function createBootProcess(): IBootProcess;
