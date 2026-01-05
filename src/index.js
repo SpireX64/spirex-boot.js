@@ -28,14 +28,13 @@ export function createBootProcess() {
 
         async run() {
             currentState = "run";
-            var promises = []
-            tasks.forEach(task => {
-                var res = task.runnable()
-                if (res != null && res.then) promises.push(res)
-            })
+            var promises = [];
+            tasks.forEach((task) => {
+                var res = task.runnable();
+                if (res != null && res.then) promises.push(res);
+            });
 
-            if (promises.length)
-                await Promise.allSettled(promises);
+            if (promises.length) await Promise.allSettled(promises);
 
             currentState = "done";
         },
