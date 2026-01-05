@@ -1,0 +1,11 @@
+!dist/
+src/
+node_modules/
+coverage/
+.github/
+yarn.lock
+tsconfig.json
+.prettierrc.json
+eslint.config.mjs
+vitest.config.mjs
+rollup.config.js
