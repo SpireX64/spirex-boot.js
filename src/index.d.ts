@@ -10,6 +10,8 @@ export declare function createBootTask(
     runnable: TRunnable,
 ): TBootTask;
 
-export interface IBootProcess {}
+export interface IBootProcess {
+    readonly count: number;
+}
 
 export declare function createBootProcess(): IBootProcess;

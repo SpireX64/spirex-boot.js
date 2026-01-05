@@ -3,5 +3,9 @@ export function createBootTask(name, runnable) {
 }
 
 export function createBootProcess() {
-    return {};
+    return {
+        get count() {
+            return 0;
+        },
+    };
 }

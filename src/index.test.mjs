@@ -26,13 +26,12 @@ describe("SpireX/Boot", () => {
     describe("Boot Process", () => {
         describe("Create process", () => {
             test("WHEN: Create process instance", () => {
-                // Arrange --------
-
                 // Act ------------
                 var process = createBootProcess();
 
                 // Assert ---------
                 expect(process).instanceOf(Object);
+                expect(process.count).eq(0);
             });
         });
     });
