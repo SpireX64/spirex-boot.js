@@ -3,8 +3,14 @@ export function createBootTask(name, runnable) {
 }
 
 export function createBootProcess() {
+    var currentState = "idle";
     var tasks = new Set();
+
     return {
+        get state() {
+            return currentState;
+        },
+
         get count() {
             return tasks.size;
         },
@@ -12,6 +18,11 @@ export function createBootProcess() {
         add(task) {
             tasks.add(task);
             return this;
-        }
+        },
+
+        run() {
+            currentState = "done";
+            return Promise.resolve();
+        },
     };
 }

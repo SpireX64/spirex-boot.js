@@ -1,6 +1,22 @@
 import { vi, describe, test, expect } from "vitest";
 import { createBootTask, createBootProcess } from "./index";
 
+function catchError(fn) {
+    try {
+        fn();
+    } catch (e) {
+        return e;
+    }
+}
+
+async function catchErrorAsync(afn) {
+    try {
+        await afn();
+    } catch (e) {
+        return e;
+    }
+}
+
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
         describe("Create task", () => {
@@ -31,6 +47,7 @@ describe("SpireX/Boot", () => {
 
                 // Assert ---------
                 expect(process).instanceOf(Object);
+                expect(process.state).eq("idle");
                 expect(process.count).eq(0);
             });
         });
@@ -53,7 +70,7 @@ describe("SpireX/Boot", () => {
             });
 
             test("WHEN: Adding the same task twice", () => {
-                 // Arrange --------
+                // Arrange --------
                 var taskRunnable = vi.fn();
                 var task = createBootTask("task", taskRunnable);
 
@@ -65,6 +82,33 @@ describe("SpireX/Boot", () => {
                 // Assert --------
                 expect(process.count).eq(1);
                 expect(taskRunnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Add many tasks", () => {
+                // Arrange ---------
+                var taskA = createBootTask("taskA");
+                var taskB = createBootTask("taskB");
+
+                var process = createBootProcess();
+
+                // Act -------------
+                process.add(taskA).add(taskB);
+
+                // Assert ----------
+                expect(process.count).eq(2);
+            });
+        });
+
+        describe("Running process", () => {
+            test("WHEN: Run empty process", async () => {
+                // Arrange --------
+                var process = createBootProcess();
+
+                // Act ------------
+                await process.run();
+
+                // Assert ---------
+                expect(process.state).eq("done");
             });
         });
     });
