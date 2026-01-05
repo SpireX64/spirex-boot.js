@@ -1,3 +1,8 @@
+export var BootError = Object.freeze({
+    AddAfterRun: () =>
+        `Tasks cannot be added after the boot process has started.`,
+});
+
 export function createBootTask(name, runnable) {
     return Object.freeze({ name, runnable });
 }
@@ -16,6 +21,7 @@ export function createBootProcess() {
         },
 
         add(task) {
+            if (currentState !== "idle") throw Error(BootError.AddAfterRun());
             tasks.add(task);
             return this;
         },

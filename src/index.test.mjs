@@ -1,5 +1,6 @@
 import { vi, describe, test, expect } from "vitest";
 import { createBootTask, createBootProcess } from "./index";
+import { BootError } from "./index.js";
 
 function catchError(fn) {
     try {
@@ -96,6 +97,22 @@ describe("SpireX/Boot", () => {
 
                 // Assert ----------
                 expect(process.count).eq(2);
+            });
+
+            test("WHEN: Adding a task when process was started", async () => {
+                // Arrange -------
+                var taskRunnable = vi.fn();
+                var task = createBootTask("task", taskRunnable);
+
+                var process = createBootProcess();
+                await process.run();
+
+                // Act -----------
+                var error = catchError(() => process.add(task));
+
+                // Assert --------
+                expect(error).instanceOf(Error);
+                expect(error.message).eq(BootError.AddAfterRun());
             });
         });
 
