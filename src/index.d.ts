@@ -12,6 +12,8 @@ export declare function createBootTask(
 
 export interface IBootProcess {
     readonly count: number;
+
+    add(task: TBootTask): IBootProcess
 }
 
 export declare function createBootProcess(): IBootProcess;

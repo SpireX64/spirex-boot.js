@@ -34,5 +34,38 @@ describe("SpireX/Boot", () => {
                 expect(process.count).eq(0);
             });
         });
+
+        describe("Adding tasks to process", () => {
+            test("WHEN: Adding a task", () => {
+                // Arrange --------
+                var taskRunnable = vi.fn();
+                var task = createBootTask("task", taskRunnable);
+
+                var process = createBootProcess();
+
+                // Act ------------
+                var chainingRef = process.add(task);
+
+                // Assert ---------
+                expect(process.count).eq(1);
+                expect(chainingRef).eq(process);
+                expect(taskRunnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Adding the same task twice", () => {
+                 // Arrange --------
+                var taskRunnable = vi.fn();
+                var task = createBootTask("task", taskRunnable);
+
+                var process = createBootProcess().add(task);
+
+                // Act ------------
+                process.add(task);
+
+                // Assert --------
+                expect(process.count).eq(1);
+                expect(taskRunnable).not.toHaveBeenCalled();
+            });
+        });
     });
 });

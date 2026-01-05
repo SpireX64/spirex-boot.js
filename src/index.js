@@ -3,9 +3,15 @@ export function createBootTask(name, runnable) {
 }
 
 export function createBootProcess() {
+    var tasks = new Set();
     return {
         get count() {
-            return 0;
+            return tasks.size;
         },
+
+        add(task) {
+            tasks.add(task);
+            return this;
+        }
     };
 }
