@@ -26,9 +26,18 @@ export function createBootProcess() {
             return this;
         },
 
-        run() {
+        async run() {
+            currentState = "run";
+            var promises = []
+            tasks.forEach(task => {
+                var res = task.runnable()
+                if (res != null && res.then) promises.push(res)
+            })
+
+            if (promises.length)
+                await Promise.allSettled(promises);
+
             currentState = "done";
-            return Promise.resolve();
         },
     };
 }

@@ -122,10 +122,54 @@ describe("SpireX/Boot", () => {
                 var process = createBootProcess();
 
                 // Act ------------
-                await process.run();
+                var runningPromise = process.run();
 
                 // Assert ---------
+                expect(runningPromise).instanceOf(Promise);
                 expect(process.state).eq("done");
+
+                // Teardown -------
+                await runningPromise;
+            });
+
+            test("WHEN: Run process with sync task", async () => {
+                // Arrange -------
+                var syncRunnable = vi.fn();
+                var syncTask = createBootTask("sync", syncRunnable);
+
+                var process = createBootProcess().add(syncTask);
+
+                // Act -----------
+                var runningPromise = process.run();
+
+                // Assert --------
+                expect(process.state).eq("done");
+                expect(runningPromise).instanceOf(Promise);
+                expect(syncRunnable).toHaveBeenCalled();
+
+                // Teardown ------
+                await runningPromise;
+            });
+
+            test("WHEN: Run process with async task", async () => {
+                // Arrange -------
+                var asyncRunnable = vi.fn(() => Promise.resolve());
+                var asyncTask = createBootTask("async", asyncRunnable);
+
+                var process = createBootProcess().add(asyncTask);
+
+                // Act -----------
+                var runningPromise = process.run();
+                var stateAfterRun = process.state;
+
+                await runningPromise;
+
+                // Assert --------
+
+                expect(stateAfterRun).eq("run");
+                expect(process.state).eq("done");
+                expect(runningPromise).instanceOf(Promise);
+                expect(asyncRunnable).toHaveBeenCalled();
             });
         });
     });
