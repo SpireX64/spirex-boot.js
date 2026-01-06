@@ -3,22 +3,30 @@ var frz = Object.freeze;
 var errAddAfterRun = "Tasks can't be added after the boot process has started.";
 var errAlreadyStarted =
     "The boot process cannot be started because it is already running.";
+var errNanPriority = (taskName) =>
+    `The provided task priority for task ${taskName} must be a number.`;
 var errStrongDependenceOnOptionalTask = (mandatoryTaskName, optionalTaskName) =>
     `Mandatory task "${mandatoryTaskName}" can't have a strong dependence on optional task "${optionalTaskName}".`;
 
 var emptyDepsList = frz([]);
 
+var cmpPriority = (lh, rhv) => rhv.priority - lhv.priority;
+
 export function createBootTask(name, run, optionsOrDependencies) {
     var deps = emptyDepsList,
-        optional = false;
+        optional = false,
+        priority = 0;
     if (typeof optionsOrDependencies === "object") {
         if (Array.isArray(optionsOrDependencies)) {
             deps = optionsOrDependencies;
         } else {
             deps = optionsOrDependencies.deps;
             optional = !!optionsOrDependencies.optional;
+            priority = optionsOrDependencies.priority;
         }
     }
+
+    if (Number.isNaN(priority)) throw Error(errNanPriority(name));
 
     deps &&= frz(
         deps.map((dep) => {
@@ -31,7 +39,7 @@ export function createBootTask(name, run, optionsOrDependencies) {
         }),
     );
 
-    return frz({ name, run, deps, optional });
+    return frz({ name, run, deps, optional, priority });
 }
 
 export function createBootProcess() {

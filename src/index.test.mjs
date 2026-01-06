@@ -135,6 +135,27 @@ describe("SpireX/Boot", () => {
             // Assert ---------
             expect(error).instanceOf(Error);
         });
+
+        test.each([0, 5, -10, Infinity, -Infinity])(
+            "WHEN: Create task with '%d' priority",
+            (priority) => {
+                // Act ------------
+                var task = createBootTask(task, noop, { priority });
+
+                // Assert ---------
+                expect(task.priority).eq(priority);
+            },
+        );
+
+        test("WHEN: Create task with NaN priority", () => {
+            // Act ------------
+            var error = catchError(() =>
+                createBootTask("task", noop, { priority: NaN }),
+            );
+
+            // Assert ---------
+            expect(error).instanceOf(Error);
+        });
     });
 
     describe("Boot Process", () => {
