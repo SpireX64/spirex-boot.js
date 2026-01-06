@@ -57,6 +57,7 @@ describe("SpireX/Boot", () => {
             expect(taskBDependence).not.eq(taskA);
             expect(taskBDependence.on).eq(taskA);
             expect(taskBDependence).is.frozen;
+            expect(taskBDependence.weak).toBeFalsy();
         });
 
         test("WHEN: Create task with dependency (dependent object)", () => {
@@ -74,6 +75,7 @@ describe("SpireX/Boot", () => {
             expect(taskBDependence).not.eq(taskA);
             expect(taskBDependence.on).eq(taskA);
             expect(taskBDependence).is.frozen;
+            expect(taskBDependence.weak).toBeFalsy();
         });
 
         test("WHEN: Create task with options", () => {
@@ -90,6 +92,7 @@ describe("SpireX/Boot", () => {
 
             // Assert ----------
             expect(task.run).eq(taskRunnable);
+            expect(taskRunnable).not.toHaveBeenCalled();
             expect(task.optional).is.true;
 
             expect(task.deps).instanceOf(Array);
@@ -97,6 +100,40 @@ describe("SpireX/Boot", () => {
 
             var taskDependence = task.deps[0];
             expect(taskDependence.on).eq(depTask);
+            expect(taskDependence.weak).toBeFalsy();
+        });
+
+        test("WHEN: Create task with weak dependency", () => {
+            // Arrange ----------
+            var depTask = createBootTask("depTask", noop);
+            var taskRunnable = vi.fn();
+
+            // Act --------------
+
+            var task = createBootTask("task", taskRunnable, [
+                { on: depTask, weak: true },
+            ]);
+
+            // Assert -----------
+            expect(taskRunnable).not.toHaveBeenCalled();
+            expect(task.deps).toHaveLength(1);
+
+            var taskDependence = task.deps[0];
+            expect(taskDependence.on).eq(depTask);
+            expect(taskDependence.weak).toBeTruthy();
+        });
+
+        test("WHEN: Create task with strong dependence on optional task", () => {
+            // Arrange --------
+            var optionalTask = createBootTask("opt", noop, { optional: true });
+
+            // Act ------------
+            var error = catchError(() =>
+                createBootTask("task", noop, [optionalTask]),
+            );
+
+            // Assert ---------
+            expect(error).instanceOf(Error);
         });
     });
 

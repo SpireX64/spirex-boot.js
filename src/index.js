@@ -1,7 +1,10 @@
 var frz = Object.freeze;
 
-var errAddAfterRun = "Tasks cannot be added after the boot process has started";
-var errAlreadyStarted = "The boot process already started"
+var errAddAfterRun = "Tasks can't be added after the boot process has started.";
+var errAlreadyStarted =
+    "The boot process cannot be started because it is already running.";
+var errStrongDependenceOnOptionalTask = (mandatoryTaskName, optionalTaskName) =>
+    `Mandatory task "${mandatoryTaskName}" can't have a strong dependence on optional task "${optionalTaskName}".`;
 
 var emptyDepsList = frz([]);
 
@@ -17,7 +20,16 @@ export function createBootTask(name, run, optionsOrDependencies) {
         }
     }
 
-    deps &&= frz(deps.map((it) => frz(it.on ? it : { on: it })));
+    deps &&= frz(
+        deps.map((dep) => {
+            dep = frz(dep.on ? dep : { on: dep });
+            if (!optional && !dep.weak && dep.on.optional)
+                throw Error(
+                    errStrongDependenceOnOptionalTask(name, dep.on.name),
+                );
+            return dep;
+        }),
+    );
 
     return frz({ name, run, deps, optional });
 }
@@ -44,8 +56,7 @@ export function createBootProcess() {
         },
 
         async run() {
-            if (currentState !== "idle")
-                throw Error(errAlreadyStarted);
+            if (currentState !== "idle") throw Error(errAlreadyStarted);
             currentState = "run";
             var promises = [];
             tasks.forEach((task) => {
