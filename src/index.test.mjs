@@ -208,6 +208,24 @@ describe("SpireX/Boot", () => {
                 expect(runningPromise).instanceOf(Promise);
                 expect(asyncRunnable).toHaveBeenCalled();
             });
+
+            test("WHEN: Run process when it already running", async () => {
+                // Arrange -------
+                var task = createBootTask("task", () => Promise.resolve());
+
+                var process = createBootProcess().add(task);
+
+                var runningPromise = process.run();
+
+                // Act -----------
+                var error = await catchErrorAsync(() => process.run())
+
+                // Assert --------
+                expect(error).instanceOf(Error);
+
+                // Teardown -------
+                await runningPromise;
+            })
         });
     });
 });

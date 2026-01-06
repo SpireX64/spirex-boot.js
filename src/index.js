@@ -1,6 +1,7 @@
 export var BootError = Object.freeze({
     AddAfterRun: () =>
         `Tasks cannot be added after the boot process has started.`,
+    AlreadyStarted: () => "The boot process already started",
 });
 
 var emptyDepsList = Object.freeze([]);
@@ -33,6 +34,8 @@ export function createBootProcess() {
         },
 
         async run() {
+            if (currentState !== 'idle')
+                throw Error(BootError.AlreadyStarted());
             currentState = "run";
             var promises = [];
             tasks.forEach((task) => {
