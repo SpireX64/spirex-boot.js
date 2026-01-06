@@ -1,19 +1,28 @@
-export var BootError = Object.freeze({
+var frz = Object.freeze;
+
+export var BootError = frz({
     AddAfterRun: () =>
         `Tasks cannot be added after the boot process has started.`,
     AlreadyStarted: () => "The boot process already started",
 });
 
-var emptyDepsList = Object.freeze([]);
+var emptyDepsList = frz([]);
 
-export function createBootTask(name, runnable, dependencies) {
-    var deps = emptyDepsList;
-    if (dependencies) {
-        deps = Object.freeze(
-            dependencies.map((it) => Object.freeze(it.on ? it : { on: it })),
-        );
+export function createBootTask(name, run, optionsOrDependencies) {
+    var deps = emptyDepsList,
+        optional = false;
+    if (typeof optionsOrDependencies === "object") {
+        if (Array.isArray(optionsOrDependencies)) {
+            deps = optionsOrDependencies;
+        } else {
+            deps = optionsOrDependencies.deps;
+            optional = !!optionsOrDependencies.optional;
+        }
     }
-    return Object.freeze({ name, runnable, deps });
+
+    deps &&= frz(deps.map((it) => frz(it.on ? it : { on: it })));
+
+    return frz({ name, run, deps, optional });
 }
 
 export function createBootProcess() {
@@ -43,7 +52,7 @@ export function createBootProcess() {
             currentState = "run";
             var promises = [];
             tasks.forEach((task) => {
-                var res = task.runnable();
+                var res = task.run();
                 if (res != null && res.then) promises.push(res);
             });
 

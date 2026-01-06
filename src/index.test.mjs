@@ -34,7 +34,8 @@ describe("SpireX/Boot", () => {
             expect(task).instanceOf(Object);
             expect(task).is.frozen;
             expect(task.name).eq(taskName);
-            expect(task.runnable).eq(taskRunnable);
+            expect(task.optional).is.false;
+            expect(task.run).eq(taskRunnable);
             expect(task.deps).instanceOf(Array);
             expect(task.deps).toHaveLength(0);
             expect(task.deps).is.frozen;
@@ -74,6 +75,29 @@ describe("SpireX/Boot", () => {
             expect(taskBDependence).not.eq(taskA);
             expect(taskBDependence.on).eq(taskA);
             expect(taskBDependence).is.frozen;
+        });
+
+        test("WHEN: Create task with options", () => {
+            // Arrange ---------
+            var depTask = createBootTask("depTask", noop);
+
+            var taskRunnable = vi.fn();
+
+            // Act -------------
+            var task = createBootTask("task", taskRunnable, {
+                deps: [depTask],
+                optional: true,
+            });
+
+            // Assert ----------
+            expect(task.run).eq(taskRunnable);
+            expect(task.optional).is.true;
+
+            expect(task.deps).instanceOf(Array);
+            expect(task.deps).toHaveLength(1);
+
+            var taskDependence = task.deps[0];
+            expect(taskDependence.on).eq(depTask);
         });
     });
 
@@ -218,14 +242,14 @@ describe("SpireX/Boot", () => {
                 var runningPromise = process.run();
 
                 // Act -----------
-                var error = await catchErrorAsync(() => process.run())
+                var error = await catchErrorAsync(() => process.run());
 
                 // Assert --------
                 expect(error).instanceOf(Error);
 
                 // Teardown -------
                 await runningPromise;
-            })
+            });
         });
     });
 });

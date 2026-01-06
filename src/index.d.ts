@@ -1,6 +1,7 @@
 export type TBootTask = {
     readonly name: string;
-    readonly runnable: TRunnable;
+    readonly run: TRunnable;
+    readonly optional: boolean;
     readonly deps: readonly TBootTaskDependence[];
 };
 
@@ -8,14 +9,29 @@ export type TRunnable = () => void | Promise<void>;
 
 export type TBootTaskDependence = {
     readonly on: TBootTask;
-}
+    readonly weak?: boolean;
+};
 
-export type TBootTaskDependenciesList = readonly (TBootTask | TBootTaskDependence)[]
+export type TBootTaskDependenciesList = readonly (
+    | TBootTask
+    | TBootTaskDependence
+)[];
+
+export type TBootTaskOptions = {
+    deps?: TBootTaskDependenciesList;
+    optional?: boolean;
+};
 
 export declare function createBootTask(
     name: string,
     runnable: TRunnable,
     dependencies?: TBootTaskDependenciesList,
+): TBootTask;
+
+export declare function createBootTask(
+    name: string,
+    runnable: TRunnable,
+    options: TBootTaskOptions,
 ): TBootTask;
 
 export type TBootProcessState = "idle" | "run" | "done";
