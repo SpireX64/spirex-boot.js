@@ -1,10 +1,7 @@
 var frz = Object.freeze;
 
-export var BootError = frz({
-    AddAfterRun: () =>
-        `Tasks cannot be added after the boot process has started.`,
-    AlreadyStarted: () => "The boot process already started",
-});
+var errAddAfterRun = "Tasks cannot be added after the boot process has started";
+var errAlreadyStarted = "The boot process already started"
 
 var emptyDepsList = frz([]);
 
@@ -40,7 +37,7 @@ export function createBootProcess() {
         },
 
         add(task) {
-            if (currentState !== "idle") throw Error(BootError.AddAfterRun());
+            if (currentState !== "idle") throw Error(errAddAfterRun);
             tasks.add(task);
             stateMap.set(task, { state: "idle", awaiters: [] });
             return this;
@@ -48,7 +45,7 @@ export function createBootProcess() {
 
         async run() {
             if (currentState !== "idle")
-                throw Error(BootError.AlreadyStarted());
+                throw Error(errAlreadyStarted);
             currentState = "run";
             var promises = [];
             tasks.forEach((task) => {

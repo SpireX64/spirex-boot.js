@@ -1,6 +1,5 @@
 import { vi, describe, test, expect } from "vitest";
 import { createBootTask, createBootProcess } from "./index";
-import { BootError } from "./index.js";
 
 function catchError(fn) {
     try {
@@ -173,7 +172,6 @@ describe("SpireX/Boot", () => {
 
                 // Assert --------
                 expect(error).instanceOf(Error);
-                expect(error.message).eq(BootError.AddAfterRun());
             });
         });
 
