@@ -7,6 +7,8 @@ var errNanPriority = (taskName) =>
     `The provided task priority for task ${taskName} must be a number.`;
 var errStrongDependenceOnOptionalTask = (mandatoryTaskName, optionalTaskName) =>
     `Mandatory task "${mandatoryTaskName}" can't have a strong dependence on optional task "${optionalTaskName}".`;
+var errMandatoryTaskSkipped = (taskName, depName) =>
+    `Important task "${taskName}" was skipped because dependency "${depName}" was not met.`;
 
 var emptyDepsList = frz([]);
 
@@ -42,6 +44,70 @@ export function createBootTask(name, run, optionsOrDependencies) {
     return frz({ name, run, deps, optional, priority });
 }
 
+/**
+ * Prepares the execution graph for a set of tasks by linking dependencies
+ * and determining root tasks that can be executed first.
+ *
+ * @param tasks - A set of all tasks to include in the execution graph.
+ * @param stateMap - A map from each task to its execution state.
+ * @returns An array of root tasks, sorted by priority, ready to start execution.
+ */
+function prepareExecutionGraph(tasks, stateMap) {
+    var roots = [];
+    var maybeRoots = [];
+
+    tasks.forEach((task) => {
+        var taskState = stateMap.get(task);
+
+        // Skip tasks that are already processed
+        if (taskState.state !== "idle") return;
+
+        // Изначально задача потенциально коренная
+        var isRoot = true;
+        var isMaybeRoot = true;
+
+        if (task.deps.length > 0) {
+            for (var dep of task.deps) {
+                var depState = stateMap.get(dep.on);
+
+                // A strict or mandatory dependency prevents task from being "maybeRoot"
+                if (!dep.weak || !dep.on.optional) isMaybeRoot = false;
+
+                if (depState) {
+                    depState.awaiters.push(task);
+
+                    // If any dependency is still idle, this task is not a root
+                    if (depState.state === "idle") isRoot = false;
+                } else if (!dep.weak) {
+                    // Mandatory dependency missing
+                    if (task.optional) {
+                        taskState.state = "skip";
+                        isRoot = false;
+                        break;
+                    }
+                    else
+                        throw Error(
+                            errMandatoryTaskSkipped(task.name, dep.on.name),
+                        );
+                }
+            }
+        }
+        if (isRoot) roots.push(task);
+        else if (isMaybeRoot) maybeRoots.push(task);
+    });
+
+    // Promote tasks from "maybeRoots" if all their dependencies were not skipped
+    maybeRoots.forEach((task) => {
+        var isRoot = task.deps.every(
+            (dep) => stateMap.get(dep.on).state !== "skip",
+        );
+        if (isRoot) roots.push(task);
+    });
+
+    // Return roots sorted by priority
+    return roots.sort(cmpPriority);
+}
+
 export function createBootProcess() {
     var currentState = "idle";
     var tasks = new Set();
@@ -65,9 +131,12 @@ export function createBootProcess() {
 
         async run() {
             if (currentState !== "idle") throw Error(errAlreadyStarted);
+
+            var roots = prepareExecutionGraph(tasks, stateMap);
+
             currentState = "run";
             var promises = [];
-            tasks.forEach((task) => {
+            roots.forEach((task) => {
                 var res = task.run();
                 if (res != null && res.then) promises.push(res);
             });

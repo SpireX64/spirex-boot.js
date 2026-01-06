@@ -306,6 +306,31 @@ describe("SpireX/Boot", () => {
                 // Teardown -------
                 await runningPromise;
             });
+
+            test("WHEN: Run process with unresolved strong mandatory dependency", async () => {
+                // Arrange --------
+                var mandatoryTaskRunnable = vi.fn();
+                var mandatoryTask = createBootTask(
+                    "mandatory",
+                    mandatoryTaskRunnable,
+                );
+
+                var taskRunnable = vi.fn();
+                var task = createBootTask("task", taskRunnable, [
+                    mandatoryTask,
+                ]);
+
+                var process = createBootProcess().add(task);
+
+                // Act ------------
+                var error = await catchErrorAsync(() => process.run());
+
+                // Assert ---------
+                expect(error).instanceOf(Error);
+                expect(mandatoryTaskRunnable).not.toHaveBeenCalled();
+                expect(taskRunnable).not.toHaveBeenCalled();
+                expect(process.state).eq("idle");
+            });
         });
     });
 });
