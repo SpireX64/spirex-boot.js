@@ -3,8 +3,14 @@ export var BootError = Object.freeze({
         `Tasks cannot be added after the boot process has started.`,
 });
 
-export function createBootTask(name, runnable) {
-    return Object.freeze({ name, runnable });
+var emptyDepsList = Object.freeze([]);
+
+export function createBootTask(name, runnable, dependencies) {
+    var deps = emptyDepsList;
+    if (dependencies) {
+        deps = Object.freeze(dependencies.map(it => Object.freeze(it.on ? it : { on: it })))
+    }
+    return Object.freeze({ name, runnable, deps });
 }
 
 export function createBootProcess() {

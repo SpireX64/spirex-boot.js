@@ -18,25 +18,62 @@ async function catchErrorAsync(afn) {
     }
 }
 
+var noop = () => {};
+
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
-        describe("Create task", () => {
-            test("WHEN: Create task instance", () => {
-                // Arrange ---------
-                var taskName = "foo";
-                var taskRunnable = vi.fn();
+        test("WHEN: Create task", () => {
+            // Arrange ---------
+            var taskName = "foo";
+            var taskRunnable = vi.fn();
 
-                // Act -------------
-                var task = createBootTask(taskName, taskRunnable);
+            // Act -------------
+            var task = createBootTask(taskName, taskRunnable);
 
-                // Assert ----------
-                expect(task).instanceOf(Object);
-                expect(task).is.frozen;
-                expect(task.name).eq(taskName);
-                expect(task.runnable).eq(taskRunnable);
+            // Assert ----------
+            expect(task).instanceOf(Object);
+            expect(task).is.frozen;
+            expect(task.name).eq(taskName);
+            expect(task.runnable).eq(taskRunnable);
+            expect(task.deps).instanceOf(Array);
+            expect(task.deps).toHaveLength(0);
+            expect(task.deps).is.frozen;
 
-                expect(taskRunnable).not.toHaveBeenCalled();
-            });
+            expect(taskRunnable).not.toHaveBeenCalled();
+        });
+
+        test("WHEN: Create task with dependency (direct reference)", () => {
+            // Arrange ---------
+            var taskA = createBootTask("A", noop);
+
+            // Act --------------
+            var taskB = createBootTask("B", noop, [taskA]);
+
+            var taskBDependence = taskB.deps[0];
+
+            // Assert -----------
+            expect(taskA.deps).toHaveLength(0);
+            expect(taskB.deps).toHaveLength(1);
+            expect(taskBDependence).not.eq(taskA);
+            expect(taskBDependence.on).eq(taskA);
+            expect(taskBDependence).is.frozen;
+        });
+
+        test("WHEN: Create task with dependency (dependent object)", () => {
+            // Arrange ---------
+            var taskA = createBootTask("A", noop);
+
+            // Act --------------
+            var taskB = createBootTask("B", noop, [{ on: taskA }]);
+
+            var taskBDependence = taskB.deps[0];
+
+            // Assert -----------
+            expect(taskA.deps).toHaveLength(0);
+            expect(taskB.deps).toHaveLength(1);
+            expect(taskBDependence).not.eq(taskA);
+            expect(taskBDependence.on).eq(taskA);
+            expect(taskBDependence).is.frozen;
         });
     });
 
