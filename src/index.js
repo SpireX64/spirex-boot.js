@@ -9,7 +9,9 @@ var emptyDepsList = Object.freeze([]);
 export function createBootTask(name, runnable, dependencies) {
     var deps = emptyDepsList;
     if (dependencies) {
-        deps = Object.freeze(dependencies.map(it => Object.freeze(it.on ? it : { on: it })))
+        deps = Object.freeze(
+            dependencies.map((it) => Object.freeze(it.on ? it : { on: it })),
+        );
     }
     return Object.freeze({ name, runnable, deps });
 }
@@ -17,6 +19,7 @@ export function createBootTask(name, runnable, dependencies) {
 export function createBootProcess() {
     var currentState = "idle";
     var tasks = new Set();
+    var stateMap = new Map();
 
     return {
         get state() {
@@ -30,11 +33,12 @@ export function createBootProcess() {
         add(task) {
             if (currentState !== "idle") throw Error(BootError.AddAfterRun());
             tasks.add(task);
+            stateMap.set(task, { state: "idle", awaiters: [] });
             return this;
         },
 
         async run() {
-            if (currentState !== 'idle')
+            if (currentState !== "idle")
                 throw Error(BootError.AlreadyStarted());
             currentState = "run";
             var promises = [];
