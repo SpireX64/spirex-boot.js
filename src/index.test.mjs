@@ -81,5 +81,48 @@ describe("SpireX/Boot", () => {
                 expect(process.count).eq(2);
             });
         });
+
+        describe("Running boot process", () => {
+            test("WHEN: Run process without tasks", async () => {
+                // Arrange -----------
+                var process = createBootProcess();
+
+                // Act ---------------
+                await process.run();
+
+                // Assert ------------
+                expect(process.count).eq(0);
+            });
+
+            test("WHEN: Run process with single sync task", async () => {
+                // Arrange --------
+                var syncRunnable = vi.fn();
+                var syncTask = createBootTask("syncTask", syncRunnable);
+
+                var process = createBootProcess().add(syncTask);
+
+                // Act -----------
+                await process.run();
+
+                // Arrange -------
+                expect(process.count).eq(1);
+                expect(syncRunnable).toHaveBeenCalledOnce();
+            });
+
+            test("WHEN: Run process with single async task", async () => {
+                // Arrange --------
+                var asyncRunnable = vi.fn();
+                var asyncTask = createBootTask("asyncTask", asyncRunnable);
+
+                var process = createBootProcess().add(asyncTask);
+
+                // Act -------------
+                await process.run();
+
+                // Assert ----------
+                expect(process.count).eq(1);
+                expect(asyncRunnable).toHaveBeenCalledOnce();
+            });
+        });
     });
 });

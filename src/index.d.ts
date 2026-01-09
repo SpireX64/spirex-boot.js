@@ -14,6 +14,8 @@ export interface IBootProcess {
     readonly count: number;
 
     add(task: TBootTask): IBootProcess;
+
+    run(): Promise<void>;
 }
 
 export declare function createBootProcess(): IBootProcess;
