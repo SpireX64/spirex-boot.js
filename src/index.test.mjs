@@ -32,6 +32,7 @@ describe("SpireX/Boot", () => {
             // Assert ----
             expect(process).toBeInstanceOf(Object);
             expect(process).is.frozen;
+            expect(process.state).eq("idle");
             expect(process.count).eq(0);
         });
 
@@ -83,6 +84,22 @@ describe("SpireX/Boot", () => {
         });
 
         describe("Running boot process", () => {
+            test("WHEN: Run process", async () => {
+                // Arrange --------
+                var task = createBootTask("task", noop);
+
+                var process = createBootProcess().add(task);
+
+                // Act ------------
+                var promise = process.run();
+
+                // Assert ---------
+                expect(process.state).eq("run");
+
+                // Teardown -------
+                await promise;
+            });
+
             test("WHEN: Run process without tasks", async () => {
                 // Arrange -----------
                 var process = createBootProcess();
@@ -91,6 +108,7 @@ describe("SpireX/Boot", () => {
                 await process.run();
 
                 // Assert ------------
+                expect(process.state).eq("done");
                 expect(process.count).eq(0);
             });
 
@@ -105,6 +123,7 @@ describe("SpireX/Boot", () => {
                 await process.run();
 
                 // Arrange -------
+                expect(process.state).eq("done");
                 expect(process.count).eq(1);
                 expect(syncRunnable).toHaveBeenCalledOnce();
             });
@@ -120,6 +139,7 @@ describe("SpireX/Boot", () => {
                 await process.run();
 
                 // Assert ----------
+                expect(process.state).eq("done");
                 expect(process.count).eq(1);
                 expect(asyncRunnable).toHaveBeenCalledOnce();
             });

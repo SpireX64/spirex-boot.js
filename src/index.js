@@ -1,13 +1,24 @@
+var psIdle = "idle";
+var psRun = "run";
+var psDone = "done";
+
+var makeReadOnly = Object.freeze;
 var isPromise = (obj) => typeof obj === "object" && obj.then;
 
 export function createBootTask(name, run) {
-    return Object.freeze({ name, run });
+    return makeReadOnly({ name, run });
 }
 
 export function createBootProcess() {
+    var processState = psIdle;
+
     var tasks = new Set();
 
-    return Object.freeze({
+    return makeReadOnly({
+        get state() {
+            return processState;
+        },
+
         get count() {
             return tasks.size;
         },
@@ -17,13 +28,20 @@ export function createBootProcess() {
             return this;
         },
 
-        run() {
+        async run() {
+            if (processState !== psIdle) throw Error("Process already started");
+
+            processState = psRun;
+
             var promises = [];
             tasks.forEach((task) => {
                 var maybePromise = task.run();
                 if (isPromise(maybePromise)) promises.push(maybePromise);
             });
-            return Promise.allSettled(promises);
+
+            await Promise.allSettled(promises);
+
+            processState = psDone;
         },
     });
 }
