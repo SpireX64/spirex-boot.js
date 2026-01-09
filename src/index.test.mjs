@@ -1,6 +1,8 @@
 import { vi, describe, test, expect } from "vitest";
 import { createBootTask, createBootProcess } from "./index";
 
+var noop = () => {};
+
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
         describe("Create boot task", () => {
@@ -31,6 +33,53 @@ describe("SpireX/Boot", () => {
             expect(process).toBeInstanceOf(Object);
             expect(process).is.frozen;
             expect(process.count).eq(0);
+        });
+
+        describe("Adding tasks to boot process", () => {
+            test("WHEN: Add simple task to process", () => {
+                // Arrange ---------
+                var runnable = vi.fn();
+                var task = createBootTask("task", runnable);
+
+                var process = createBootProcess();
+
+                // Act -------------
+                var chainingProcessRef = process.add(task);
+
+                // Assert ----------
+                expect(chainingProcessRef).eq(process);
+                expect(process.count).eq(1);
+                expect(runnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Adding the same task twice", () => {
+                // Arrange ---------
+                var runnable = vi.fn();
+                var task = createBootTask("task", runnable);
+
+                var process = createBootProcess().add(task);
+
+                // Act -------------
+                process.add(task);
+
+                // Assert ----------
+                expect(process.count).eq(1);
+                expect(runnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Add many tasks to process", () => {
+                // Arrange ---------
+                var taskA = createBootTask("A", noop);
+                var taskB = createBootTask("B", noop);
+
+                var process = createBootProcess();
+
+                // Act -------------
+                process.add(taskA).add(taskB);
+
+                // Assert ----------
+                expect(process.count).eq(2);
+            });
         });
     });
 });

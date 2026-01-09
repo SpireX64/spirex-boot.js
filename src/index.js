@@ -6,6 +6,13 @@ export function createBootProcess() {
     var tasks = new Set();
 
     return Object.freeze({
-        get count() { return tasks.size },
+        get count() {
+            return tasks.size;
+        },
+
+        add(task) {
+            tasks.add(task);
+            return this;
+        },
     });
 }
