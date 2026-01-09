@@ -1,3 +1,3 @@
-export function createBootTask(name) {
-    return Object.freeze({ name });
+export function createBootTask(name, run) {
+    return Object.freeze({ name, run });
 }
