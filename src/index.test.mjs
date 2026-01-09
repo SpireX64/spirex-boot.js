@@ -54,9 +54,11 @@ describe("SpireX/Boot", () => {
 
                 // Act -------------
                 var chainingProcessRef = process.add(task);
+                var taskState = process.getTaskState(task);
 
                 // Assert ----------
                 expect(chainingProcessRef).eq(process);
+                expect(taskState).eq("idle");
                 expect(process.count).eq(1);
                 expect(runnable).not.toHaveBeenCalled();
             });
@@ -70,8 +72,10 @@ describe("SpireX/Boot", () => {
 
                 // Act -------------
                 process.add(task);
+                var taskState = process.getTaskState(task);
 
                 // Assert ----------
+                expect(taskState).eq("idle");
                 expect(process.count).eq(1);
                 expect(runnable).not.toHaveBeenCalled();
             });
@@ -86,7 +90,12 @@ describe("SpireX/Boot", () => {
                 // Act -------------
                 process.add(taskA).add(taskB);
 
+                var taskAState = process.getTaskState(taskA);
+                var taskBState = process.getTaskState(taskB);
+
                 // Assert ----------
+                expect(taskAState).eq("idle");
+                expect(taskBState).eq("idle");
                 expect(process.count).eq(2);
             });
 
@@ -149,8 +158,10 @@ describe("SpireX/Boot", () => {
 
                 // Act -----------
                 await process.run();
+                var taskState = process.getTaskState(syncTask);
 
                 // Arrange -------
+                expect(taskState).eq("done");
                 expect(process.state).eq("done");
                 expect(process.count).eq(1);
                 expect(syncRunnable).toHaveBeenCalledOnce();
@@ -165,8 +176,10 @@ describe("SpireX/Boot", () => {
 
                 // Act -------------
                 await process.run();
+                var taskState = process.getTaskState(asyncTask);
 
                 // Assert ----------
+                expect(taskState).eq("done");
                 expect(process.state).eq("done");
                 expect(process.count).eq(1);
                 expect(asyncRunnable).toHaveBeenCalledOnce();
