@@ -27,6 +27,9 @@ describe("SpireX/Boot", () => {
                 expect(task).is.frozen;
                 expect(task.name).eq(expectedName);
                 expect(task.optional).is.false;
+                expect(task.deps).instanceOf(Array);
+                expect(task.deps).toHaveLength(0);
+                expect(task.deps).is.frozen;
                 expect(task.run).eq(runnable);
                 expect(runnable).not.toHaveBeenCalled();
             });
@@ -46,8 +49,59 @@ describe("SpireX/Boot", () => {
                 expect(task).is.frozen;
                 expect(task.name).eq(expectedName);
                 expect(task.optional).is.true;
+                expect(task.deps).instanceOf(Array);
+                expect(task.deps).toHaveLength(0);
+                expect(task.deps).is.frozen;
                 expect(task.run).eq(runnable);
                 expect(runnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Create task with dependency (via task reference)", () => {
+                // Arrange -------
+                var taskARunnable = vi.fn();
+                var taskA = createBootTask("A", taskARunnable);
+
+                // Act -----------
+                var taskBRunnable = vi.fn();
+                var taskB = createBootTask("B", taskBRunnable, {
+                    deps: [taskA],
+                });
+
+                // Assert --------
+                expect(taskA.deps).toHaveLength(0);
+                expect(taskA.deps).is.frozen;
+                expect(taskB.deps).toHaveLength(1);
+                expect(taskB.deps).is.frozen;
+
+                var taskBDependence = taskB.deps[0];
+                expect(taskBDependence).instanceOf(Object);
+                expect(taskBDependence).not.toBe(taskA);
+                expect(taskBDependence).is.frozen;
+                expect(taskBDependence.on).toBe(taskA);
+            });
+
+            test("WHEN: Create task with dependency (via dependence)", () => {
+                // Arrange -------
+                var taskARunnable = vi.fn();
+                var taskA = createBootTask("A", taskARunnable);
+
+                // Act -----------
+                var taskBRunnable = vi.fn();
+                var taskB = createBootTask("B", taskBRunnable, {
+                    deps: [{ on: taskA }],
+                });
+
+                // Assert --------
+                expect(taskA.deps).toHaveLength(0);
+                expect(taskA.deps).is.frozen;
+                expect(taskB.deps).toHaveLength(1);
+                expect(taskB.deps).is.frozen;
+
+                var taskBDependence = taskB.deps[0];
+                expect(taskBDependence).instanceOf(Object);
+                expect(taskBDependence).not.toBe(taskA);
+                expect(taskBDependence).is.frozen;
+                expect(taskBDependence.on).toBe(taskA);
             });
         });
     });

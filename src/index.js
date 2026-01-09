@@ -12,8 +12,11 @@ var makeReadOnly = Object.freeze;
 var isPromise = (obj) => typeof obj === "object" && obj.then;
 
 export function createBootTask(name, run, options) {
-    var { optional = false } = options || {};
-    return makeReadOnly({ name, run, optional });
+    var { optional = false, deps = [] } = options || {};
+    deps = makeReadOnly(
+        deps.map((it) => makeReadOnly(it.on ? it : { on: it })),
+    );
+    return makeReadOnly({ name, run, deps, optional });
 }
 
 export function createBootProcess() {
