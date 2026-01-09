@@ -30,6 +30,7 @@ describe("SpireX/Boot", () => {
             // Assert ----
             expect(process).toBeInstanceOf(Object);
             expect(process).is.frozen;
+            expect(process.count).eq(0);
         });
     });
 });

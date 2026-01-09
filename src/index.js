@@ -3,5 +3,9 @@ export function createBootTask(name, run) {
 }
 
 export function createBootProcess() {
-    return Object.freeze({});
+    var tasks = new Set();
+
+    return Object.freeze({
+        get count() { return tasks.size },
+    });
 }
