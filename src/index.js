@@ -24,6 +24,7 @@ export function createBootProcess() {
         },
 
         add(task) {
+            if (processState !== psIdle) throw Error("Attempt to add task after process run")
             tasks.add(task);
             return this;
         },

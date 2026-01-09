@@ -3,6 +3,14 @@ import { createBootTask, createBootProcess } from "./index";
 
 var noop = () => {};
 
+var catchErrorAsync = async (fn) => {
+    try {
+        await fn();
+    } catch (error) {
+        return error;
+    }
+};
+
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
         describe("Create boot task", () => {
@@ -81,6 +89,26 @@ describe("SpireX/Boot", () => {
                 // Assert ----------
                 expect(process.count).eq(2);
             });
+
+            test("WHEN: Trying to add task after process run", async () => {
+                // Arrange ---------
+                var task = createBootTask("task", noop);
+
+                var process = createBootProcess();
+                var promise = process.run();
+
+                // Act -------------
+                var error = await catchErrorAsync(() => {
+                    process.add(task);
+                });
+
+                // Assert ----------
+                expect(error).instanceOf(Error);
+                expect(process.state).eq("done");
+
+                // Teardown --------
+                await promise;
+            });
         });
 
         describe("Running boot process", () => {
@@ -142,6 +170,22 @@ describe("SpireX/Boot", () => {
                 expect(process.state).eq("done");
                 expect(process.count).eq(1);
                 expect(asyncRunnable).toHaveBeenCalledOnce();
+            });
+
+            test("WHEN: Trying to run process again", async () => {
+                // Arrange ---------
+                var process = createBootProcess();
+                var promise = process.run();
+
+                // Act -------------
+                var error = await catchErrorAsync(() => process.run());
+
+                // Assert ----------
+                expect(error).instanceOf(Error);
+                expect(process.state).eq("done");
+
+                // Teardown --------
+                await promise;
             });
         });
     });
