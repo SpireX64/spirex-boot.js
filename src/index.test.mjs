@@ -1,5 +1,5 @@
 import { vi, describe, test, expect } from "vitest";
-import { createBootTask } from "./index";
+import { createBootTask, createBootProcess } from "./index";
 
 describe("SpireX/Boot", () => {
     describe("Boot Task", () => {
@@ -19,6 +19,17 @@ describe("SpireX/Boot", () => {
                 expect(task.run).eq(runnable);
                 expect(runnable).not.toHaveBeenCalled();
             });
+        });
+    });
+
+    describe("Boot Process", () => {
+        test("WHEN: Create boot process instance", () => {
+            // Act -------
+            var process = createBootProcess();
+
+            // Assert ----
+            expect(process).toBeInstanceOf(Object);
+            expect(process).is.frozen;
         });
     });
 });
