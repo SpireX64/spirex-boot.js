@@ -19,6 +19,14 @@ export function createBootTask(name, run, options) {
     return makeReadOnly({ name, run, deps, optional });
 }
 
+function findRoots(tasksSet) {
+    var roots = [];
+    tasksSet.forEach((task) => {
+        if (task.deps.length === 0) roots.push(task);
+    });
+    return roots;
+}
+
 export function createBootProcess() {
     var processState = psIdle;
 
@@ -56,15 +64,20 @@ export function createBootProcess() {
 
             processState = psRun;
 
-            var promises = [];
-            tasks.forEach((task) => {
+            var roots = findRoots(tasks);
+
+            var promises = roots.map(async (task) => {
                 var taskState = stateMap.get(task);
                 taskState.state = tsRun;
 
-                var maybePromise = task.run();
-                if (isPromise(maybePromise)) promises.push(maybePromise);
-
-                taskState.state = tsDone;
+                try {
+                    var maybePromise = task.run();
+                    if (isPromise(maybePromise)) await maybePromise;
+                    taskState.state = tsDone;
+                } catch (error) {
+                    taskState.state = tsFail;
+                    taskState.error = error;
+                }
             });
 
             await Promise.allSettled(promises);
