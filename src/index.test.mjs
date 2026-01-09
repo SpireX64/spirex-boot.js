@@ -26,6 +26,26 @@ describe("SpireX/Boot", () => {
                 expect(task).instanceOf(Object);
                 expect(task).is.frozen;
                 expect(task.name).eq(expectedName);
+                expect(task.optional).is.false;
+                expect(task.run).eq(runnable);
+                expect(runnable).not.toHaveBeenCalled();
+            });
+
+            test("WHEN: Create optional task", () => {
+                // Arrange --------
+                var expectedName = "optionalTask";
+                var runnable = vi.fn();
+
+                // Act ------------
+                var task = createBootTask(expectedName, runnable, {
+                    optional: true,
+                });
+
+                // Assert ---------
+                expect(task).instanceOf(Object);
+                expect(task).is.frozen;
+                expect(task.name).eq(expectedName);
+                expect(task.optional).is.true;
                 expect(task.run).eq(runnable);
                 expect(runnable).not.toHaveBeenCalled();
             });

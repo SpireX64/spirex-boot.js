@@ -4,12 +4,18 @@ export type TBootTaskState = "idle" | "run" | "done";
 
 export type TBootTask = {
     readonly name: string;
+    readonly optional: boolean;
     readonly run: TRunnable;
+};
+
+export type TBootTaskOptions = {
+    optional?: boolean;
 };
 
 export declare function createBootTask(
     name: string,
     runnable: TRunnable,
+    options?: TBootTaskOptions,
 ): TBootTask;
 
 export type TBootProcessState = "idle" | "run" | "done";
